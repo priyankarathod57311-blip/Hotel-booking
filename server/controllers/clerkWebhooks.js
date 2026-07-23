@@ -18,15 +18,13 @@ const clerkWebhooks = async (req, res) => {
 
         // Getting Data from request body
         const { data, type } = req.body
-        console.log("Webhook type:", type);
-        console.log("Webhook Data:", JSON.stringify(data, null, 2));
-
-        const userData = {
-    _id: data.id,
-    email: data.email_addresses?.[0]?.email_address || "test@example.com",
-    username: `${data.first_name || ""} ${data.last_name || ""}`.trim(),
-    image: data.image_url || "",
-};
+        
+                const userData = {
+            _id: data.id,
+            email: data.email_addresses[0].email_address,
+            username: data.first_name + " " + data.last_name,
+            image: data.image_url,
+        };
 
 console.log("User Data:", userData);
         
