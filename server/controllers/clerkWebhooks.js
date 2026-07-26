@@ -32,9 +32,14 @@ console.log("User Data:", userData);
         
         switch (type) {
             case "user.created":
-                await User.create(userData);
-                break;
-
+    try {
+        const user = await User.create(userData);
+        console.log("User saved:", user);
+    } catch (err) {
+        console.log("MongoDB Error:", err);
+    }
+    break;
+            
             case "user.updated":
                 await User.findByIdAndUpdate(data.id, userData);
                 break;
