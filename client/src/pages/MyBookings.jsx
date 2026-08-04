@@ -1,10 +1,31 @@
 import React, { useState } from 'react'
 import Title from '../components/Title'
-import { assets, userBookingsDummyData} from  '../assets/assets'
-
+import { assets} from  '../assets/assets'
+import toast from 'react-hot-toast'
+import { useEffect } from 'react'
+import { useAppContext } from '../context/AppContext'
 const MyBookings = () => {
 
-  const [bookings, setBookings] = useState(userBookingsDummyData)
+const {axios, getToken, user } = useAppContext()
+  const [bookings, setBookings] = useState([])
+
+  const fetchBookings = async ()=>{
+    try {
+      const {data} = await axios.get('/api/bookings/user',  {headers: { Authorization: `Bearer ${await getToken()}`}})
+      if (data.success){
+        setBookings(data.bookings)
+      }else{
+        toast.error(data.message)
+      }
+      }catch (error) {
+        toast.error(error.message)
+      }
+  }
+
+  useEffect(()=>{
+    fetchBookings()
+  },[user])
+
   return (
     <div className='py-28 md:pb-35 md:pt-32 px-4 md:px16 lg:px-24 xl:px-32'>
         <Title title='My Bookings' subTitle='Easily manage your pasts, current, and upcoming hotel reservations in one place. Plan your trips seamlessly with just a few cliks' align='left' />
@@ -30,7 +51,7 @@ const MyBookings = () => {
                    </div>
                    <div className='flex items-center gap-1 text-sm text-gray-500'>
                     <img src={assets.guestsIcon} alt='guests-icon'/>
-                    <span>Guests: {bookings.guests}</span>
+                    <span>Guests: {booking.guests}</span>
                    </div>
                    <p className='text-base'>Total: ${booking.totalPrice}</p>
                 </div>    
@@ -48,12 +69,29 @@ const MyBookings = () => {
                 </div>
               {/*Payment Status*/}
               <div className='flex flex-col items-start justify-center pt-3'>
-                <div className='flex items-center gap-2'><div className={`h-3 w-3 rounded-full ${booking.isPaid ? "bg-green-500" : "bg-red-500"}`}></div>
-                <p className={`text-sm ${booking.isPaid ? "text-green-500" : "text-red-500"}`}>{booking.isPaid ? "Paid" : "Unpaid"}</p>
+  <div className='flex items-center gap-2'>
+    <div
+      className={`h-3 w-3 rounded-full ${
+        booking.isPaid ? "bg-green-500" : "bg-red-500"
+      }`}
+    ></div>
 
-                </div>
+    <p
+      className={`text-sm ${
+        booking.isPaid ? "text-green-500" : "text-red-500"
+      }`}
+    >
+      {booking.isPaid ? "Paid" : "Unpaid"}
+    </p>
+  </div>
+
+  {!booking.isPaid && (
+    <button className="mt-3 px-4 py-2 border rounded">
+      Pay Now
+    </button>
+  )}
+</div>
               </div>
-            </div>
           ))}
         </div>
     </div>

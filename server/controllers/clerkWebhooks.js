@@ -22,28 +22,32 @@ const clerkWebhooks = async (req, res) => {
         console.log("Webhook Data:", data);
         console.log("Request Body:", JSON.stringify(req.body, null, 2));
         
+                
+
+console.log("User Data:", userData);
+        
+        switch (type) {
+            case "user.created":{
+      const userData = {
+            _id: data.id,
+            email: data.email_addresses[0].email_address,
+            username: data.first_name || data.email_addresses[0].email_address.split("@")[0],
+            image: data.image_url,
+        };
+    await User.create(userData);
+    break;
+            }
+            
+            case "user.updated":{
                 const userData = {
             _id: data.id,
             email: data.email_addresses[0].email_address,
             username: data.first_name || data.email_addresses[0].email_address.split("@")[0],
             image: data.image_url,
         };
-
-console.log("User Data:", userData);
-        
-        switch (type) {
-            case "user.created":
-    try {
-        const user = await User.create(userData);
-        console.log("User saved:", user);
-    } catch (err) {
-        console.log("MongoDB Error:", err);
-    }
-    break;
-            
-            case "user.updated":
                 await User.findByIdAndUpdate(data.id, userData);
                 break;
+    }
 
             case "user.deleted":
                 await User.findByIdAndDelete(data.id);
