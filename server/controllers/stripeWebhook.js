@@ -28,7 +28,20 @@ export const stripeWebhooks = async (request, response)=>{
 
        
         // Mark Payment as Paid
-        await Booking.findByIdAndUpdate(bookingId, {isPaid: true, paymentMethod:"Stripe"})
+        try {
+    const updatedBooking = await Booking.findByIdAndUpdate(
+        bookingId,
+        {
+            isPaid: true,
+            paymentMethod: "Stripe",
+        },
+        { new: true }
+    );
+
+    console.log("Updated booking:", updatedBooking);
+} catch (error) {
+    console.error("Booking update error:", error);
+}
     }else{
         console.log("Unhandled even type:", event.type)
 
