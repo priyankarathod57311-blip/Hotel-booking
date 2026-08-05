@@ -4,8 +4,9 @@ import Booking from "../models/Booking.js";
 // API to handle Stripe Webhooks
 
 export const stripeWebhooks = async (request, response)=>{
+    console.log("Stripe webhook received");
     // Stripe GateWay Initialize
-    const stripInstance = new stripe(process.env.STRIPE_SECRET_KEY);
+    const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
     const sig = request.headers['stripe-signature'];
     let event;
 
@@ -17,17 +18,14 @@ export const stripeWebhooks = async (request, response)=>{
 
     }
     // Handle the event
-    if(event.type === "payment_intent.succeeded"){
-        const paymentIntent = event.data.object;
-        const paymentIntentId = paymentIntent.id;
+    if (event.type === "checkout.session.completed") {
+        const session = event.data.object;
+        const { bookingId } = session.metadata;
 
-        // Getting Session Metadata
-        const session = await stripeInstance.checkout.session.list({
-            payment_intent: paymentIntentId,
+       
+        
 
-        });
-
-        const { bookingId } = session.data[0].metadata;
+       
         // Mark Payment as Paid
         await Booking.findByIdAndUpdate(bookingId, {isPaid: true, paymentMethod:"Stripe"})
     }else{

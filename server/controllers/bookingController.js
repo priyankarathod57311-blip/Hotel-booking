@@ -135,6 +135,7 @@ export const getHotelBookings =  async (req, res) =>{
 }
 
 export const stripePayment = async (req, res) => {
+    console.log("stripePayment called");
    try {
        const { bookingId } = req.body;
 
@@ -166,7 +167,7 @@ const session = await stripeInstance.checkout.sessions.create({
     success_url: `${origin}/loader/my-bookings`,
     cancel_url: `${origin}/my-bookings`,
     metadata:{
-
+      bookingId,
     }
 });
 res.json({success: true, url: session.url})
