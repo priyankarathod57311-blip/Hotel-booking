@@ -19,6 +19,9 @@ export const stripeWebhooks = async (request, response)=>{
 
     }
     // Handle the event
+    console.log("Event type:", event.type);
+
+if (event.type === "checkout.session.completed") {
     if (event.type === "checkout.session.completed") {
         const session = event.data.object;
         console.log("Session metadata:", session.metadata);
