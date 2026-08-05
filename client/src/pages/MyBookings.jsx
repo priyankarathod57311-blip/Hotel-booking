@@ -22,6 +22,19 @@ const {axios, getToken, user } = useAppContext()
       }
   }
 
+  const handlePayment = async (bookingId)=>{
+    try {
+      const { data } = await axios.post('/api/bookings/stripe-payment', {bookingId}, {headers: { Authorization: `Bearer ${await getToken()}`}})
+      if (data.success) {
+        window.location.href = data.url
+      }else{
+        toast.error(data.message)
+      }
+    }catch (error) {
+      toast.error (error.message)
+    }
+  }
+
   useEffect(()=>{
     fetchBookings()
   },[user])
@@ -86,7 +99,7 @@ const {axios, getToken, user } = useAppContext()
   </div>
 
   {!booking.isPaid && (
-    <button className="mt-3 px-4 py-2 border rounded">
+    <button onClick={()=>handlePayment(booking._id)} className="mt-3 px-4 py-2 border rounded">
       Pay Now
     </button>
   )}
