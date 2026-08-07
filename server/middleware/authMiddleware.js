@@ -10,7 +10,7 @@ export const protect = async (req, res, next)=>{
     if(!userId){
        return res.json({success: false, message: "not authenticated"});
     }else{
-        const user = await User.findOne({ _id: userId });
+        const user = await User.findOne({ clerkId: userId });
 console.log("User from DB:", user);
         req.user = user; 
         next()
