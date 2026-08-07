@@ -24,7 +24,7 @@ const clerkWebhooks = async (req, res) => {
         
                 
 
-console.log("User Data:", userData);
+
         
         switch (type) {
             case "user.created":{
