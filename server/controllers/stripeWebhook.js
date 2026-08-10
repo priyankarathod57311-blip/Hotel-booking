@@ -7,6 +7,7 @@ export const stripeWebhooks = async (request, response) => {
 
     const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
     const sig = request.headers["stripe-signature"];
+
     let event;
 
     try {
@@ -22,26 +23,55 @@ export const stripeWebhooks = async (request, response) => {
 
     console.log("Event type:", event.type);
 
-    if (event.type === "checkout.session.completed") {
-        const session = event.data.object;
-        console.log("Session metadata:", session.metadata);
-        console.log("Booking ID:", session.metadata.bookingId);
+    try {
+        if (event.type === "checkout.session.completed") {
+            const session = event.data.object;
 
-        const { bookingId } = session.metadata;
+            console.log("Session metadata:", session.metadata);
 
-        const updatedBooking = await Booking.findByIdAndUpdate(
-            bookingId,
-            {
-                isPaid: true,
-                paymentMethod: "Stripe",
-            },
-            { new: true }
-        );
+            const bookingId = session.metadata?.bookingId;
 
-        console.log("Updated booking:", updatedBooking);
-    } else {
-        console.log("Unhandled event type:", event.type);
+            console.log("Booking ID:", bookingId);
+
+            if (!bookingId) {
+                console.error("Booking ID is missing from Stripe metadata");
+                return response.status(400).json({
+                    success: false,
+                    message: "Booking ID missing"
+                });
+            }
+
+            const updatedBooking = await Booking.findByIdAndUpdate(
+                bookingId,
+                {
+                    isPaid: true,
+                    paymentMethod: "Stripe",
+                },
+                { new: true }
+            );
+
+            console.log("Updated booking:", updatedBooking);
+
+            if (!updatedBooking) {
+                console.error("Booking not found:", bookingId);
+
+                return response.status(404).json({
+                    success: false,
+                    message: "Booking not found"
+                });
+            }
+        } else {
+            console.log("Unhandled event type:", event.type);
+        }
+
+        return response.json({ received: true });
+
+    } catch (error) {
+        console.error("Stripe webhook processing error:", error);
+
+        return response.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
-
-    response.json({ received: true });
 };
